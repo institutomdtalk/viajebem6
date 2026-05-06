@@ -1,943 +1,2259 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MD Talk — Sala de Espera</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Raleway:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<p>Shopping Abroad — English for Travelers</p>
 <style>
   :root {
-    --navy:       #0B1D3A;
-    --navy-deep:  #050D1A;
-    --navy-mid:   #0F2645;
-    --navy-light: #163158;
-    --gold:       #C4A45A;
-    --gold-light: #D4BA7A;
-    --gold-pale:  #E8D9B0;
-    --cream:      rgba(255,255,255,.88);
-    --muted:      rgba(255,255,255,.42);
-    --snake-head: #C4A45A;
-    --snake-body: #D4BA7A;
-    --snake-tail: rgba(196,164,90,0.4);
-    --cell:       44px;
+    --color-bg: #FAF8F5;
+    --color-bg-warm: #F5F0EA;
+    --color-bg-card: #FFFFFF;
+    --color-ink: #1A1A1A;
+    --color-ink-soft: #4A4540;
+    --color-ink-muted: #8A8279;
+    --color-accent: #8B6914;
+    --color-accent-light: #C4991A;
+    --color-accent-bg: #FBF6EB;
+    --color-green: #2D6A4F;
+    --color-green-bg: #F0F7F3;
+    --color-coral: #B8553A;
+    --color-coral-bg: #FDF2EF;
+    --color-blue: #2B5C8A;
+    --color-blue-bg: #EEF3F8;
+    --color-purple: #6B4C8A;
+    --color-purple-bg: #F4F0F8;
+    --color-border: #E8E2DA;
+    --color-border-light: #F0ECE6;
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'Source Serif 4', Georgia, serif;
+    --font-ui: 'DM Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
   }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  html, body {
-    width: 100%; height: 100%;
-    background: var(--navy-deep);
-    font-family: 'Raleway', sans-serif;
-    overflow: hidden;
-    color: var(--cream);
-  }
+  html { scroll-behavior: smooth; }
 
-  /* ─── DOT GRID BACKGROUND ─── */
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image: radial-gradient(circle, rgba(196,164,90,.18) 1px, transparent 1px);
-    background-size: 28px 28px;
-    pointer-events: none;
-    z-index: 0;
+  body {
+    font-family: var(--font-body);
+    background: var(--color-bg);
+    color: var(--color-ink);
+    line-height: 1.75;
+    font-size: 17px;
+    -webkit-font-smoothing: antialiased;
   }
 
-  /* ─── AMBIENT GLOW ─── */
-  body::after {
-    content: '';
-    position: fixed;
-    top: -20%; left: 50%; transform: translateX(-50%);
-    width: 800px; height: 600px;
-    background: radial-gradient(ellipse, rgba(196,164,90,.06) 0%, transparent 65%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* ─── FLOATING GEO ELEMENTS ─── */
-  .geo {
-    position: fixed;
-    pointer-events: none;
-    z-index: 0;
-    animation: geoFloat 8s ease-in-out infinite;
-  }
-  .geo-ring {
-    width: 120px; height: 120px;
-    border: 1px solid rgba(196,164,90,.12);
-    border-radius: 50%;
-    top: 8%; right: 6%;
-    animation-duration: 11s;
-  }
-  .geo-ring-2 {
-    width: 60px; height: 60px;
-    border: 1px solid rgba(196,164,90,.18);
-    border-radius: 50%;
-    bottom: 14%; left: 4%;
-    animation-duration: 9s;
-    animation-delay: -3s;
-  }
-  .geo-diamond {
-    width: 18px; height: 18px;
-    border: 1px solid rgba(196,164,90,.3);
-    transform: rotate(45deg);
-    top: 50%; right: 4%;
-    animation-duration: 13s;
-    animation-delay: -5s;
-  }
-  .geo-line {
-    width: 1px; height: 80px;
-    background: linear-gradient(to bottom, transparent, rgba(196,164,90,.25), transparent);
-    top: 20%; left: 8%;
-    animation-duration: 7s;
-    animation-delay: -2s;
-  }
-  @keyframes geoFloat {
-    0%, 100% { transform: translateY(0); }
-    50%       { transform: translateY(-14px); }
-  }
-  .geo-diamond { animation: geoPulse 13s ease-in-out infinite; }
-  @keyframes geoPulse {
-    0%, 100% { transform: rotate(45deg) scale(1);   opacity: .3; }
-    50%       { transform: rotate(45deg) scale(1.3); opacity: .7; }
-  }
-
-  /* ─── LAYOUT ─── */
-  .wrapper {
-    position: relative; z-index: 1;
-    width: 100vw; height: 100vh;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    padding: 0 0 0 0;
-  }
-
-  /* ─── HEADER ─── */
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 24px 48px 20px;
-    border-bottom: 1px solid rgba(196,164,90,.12);
-  }
-  .brand {
-    display: flex; flex-direction: column; gap: 2px;
-  }
-  .brand-overline {
-    font-family: 'Raleway', sans-serif;
-    font-size: 9px;
-    font-weight: 500;
-    letter-spacing: .25em;
-    text-transform: uppercase;
-    color: var(--gold);
-  }
-  .brand-name {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 26px;
-    font-weight: 400;
-    letter-spacing: .08em;
-    color: var(--cream);
-    line-height: 1;
-  }
-  .brand-name em {
-    font-style: italic;
-    color: var(--gold);
-  }
-
-  .header-right {
-    text-align: right;
-    display: flex; flex-direction: column; gap: 4px;
-  }
-  .header-tag {
-    font-size: 9px;
-    letter-spacing: .2em;
-    text-transform: uppercase;
-    color: var(--gold);
-    font-weight: 500;
-  }
-  .header-score-label {
-    font-size: 11px;
-    letter-spacing: .12em;
-    color: var(--muted);
-    text-transform: uppercase;
-  }
-  .header-score-val {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 32px;
-    font-weight: 300;
-    color: var(--gold-light);
-    line-height: 1;
-    transition: all .2s;
-  }
-
-  /* ─── MAIN ARENA ─── */
-  .arena {
+  /* ========== HERO ========== */
+  .hero {
+    position: relative;
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    flex: 1;
     overflow: hidden;
+    background: linear-gradient(165deg, #1A1410 0%, #2C2218 35%, #3D2E1A 65%, #1A1410 100%);
   }
 
-  #canvas-wrap {
-    position: relative;
-  }
-
-  canvas {
-    display: block;
-    border: 1px solid rgba(196,164,90,.2);
-    box-shadow:
-      0 0 60px rgba(196,164,90,.06),
-      inset 0 0 80px rgba(5,13,26,.6);
-    background: rgba(5,13,26,.55);
-    backdrop-filter: blur(2px);
-  }
-
-  /* ─── WORD FLOATING LABELS (rendered on canvas overlay) ─── */
-  .word-label {
-    position: absolute;
-    font-family: 'Raleway', sans-serif;
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: .15em;
-    text-transform: uppercase;
-    color: var(--gold-light);
-    pointer-events: none;
-    transition: opacity .4s, transform .3s;
-    white-space: nowrap;
-    text-shadow: 0 0 12px rgba(196,164,90,.4);
-  }
-  .word-label.eaten {
-    animation: wordEaten .6s forwards;
-  }
-  @keyframes wordEaten {
-    0%   { opacity: 1; transform: scale(1.4);    color: #fff; }
-    100% { opacity: 0; transform: scale(2) translateY(-20px); }
-  }
-
-  /* ─── OVERLAY SCREENS ─── */
-  .overlay {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 20px;
-    background: rgba(5,13,26,.85);
-    backdrop-filter: blur(6px);
-    z-index: 10;
-    transition: opacity .5s;
-  }
-  .overlay.hidden { opacity: 0; pointer-events: none; }
-
-  .overlay-overline {
-    font-size: 9px;
-    letter-spacing: .3em;
-    text-transform: uppercase;
-    color: var(--gold);
-    font-weight: 500;
-  }
-  .overlay-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(36px, 5vw, 60px);
-    font-weight: 300;
-    color: var(--cream);
-    text-align: center;
-    line-height: 1.1;
-  }
-  .overlay-title em {
-    font-style: italic;
-    color: var(--gold);
-  }
-  .overlay-divider {
-    width: 60px; height: 1px;
-    background: var(--gold);
-    opacity: .5;
-  }
-  .overlay-sub {
-    font-size: 12px;
-    letter-spacing: .1em;
-    color: var(--muted);
-    text-align: center;
-    line-height: 1.8;
-  }
-  .overlay-score-display {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 64px;
-    font-weight: 300;
-    color: var(--gold-light);
-    line-height: 1;
-  }
-  .overlay-score-label {
-    font-size: 10px;
-    letter-spacing: .2em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-top: -12px;
-  }
-
-  .btn-start {
-    margin-top: 8px;
-    padding: 14px 48px;
-    background: transparent;
-    border: 1px solid var(--gold);
-    color: var(--gold);
-    font-family: 'Raleway', sans-serif;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: .25em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all .25s;
-    position: relative;
-    overflow: hidden;
-  }
-  .btn-start::before {
+  .hero::before {
     content: '';
-    position: absolute; inset: 0;
-    background: var(--gold);
-    transform: translateX(-101%);
-    transition: transform .25s;
-    z-index: -1;
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 40%, rgba(139,105,20,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 60%, rgba(196,153,26,0.08) 0%, transparent 50%);
+    z-index: 1;
   }
-  .btn-start:hover { color: var(--navy-deep); }
-  .btn-start:hover::before { transform: translateX(0); }
 
-  /* ─── GLOSSARY TICKER ─── */
-  .word-earned {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.8);
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 22px;
-    font-style: italic;
-    color: var(--gold-light);
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='<a href="http://www.w3.org/2000/svg" class="redactor-autoparser-object">http://www.w3.org/2000/svg</a>'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C4991A' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+    z-index: 1;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
     text-align: center;
-    pointer-events: none;
-    z-index: 20;
-    opacity: 0;
-    text-shadow: 0 0 30px rgba(196,164,90,.6);
-  }
-  .word-earned.show {
-    animation: wordPop .9s forwards;
-  }
-  @keyframes wordPop {
-    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-    20%  { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
-    70%  { opacity: 1; transform: translate(-50%, -50%) scale(1);   }
-    100% { opacity: 0; transform: translate(-50%, -60%) scale(0.95); }
+    padding: 2rem;
+    max-width: 800px;
+    animation: heroFadeIn 1.4s ease-out;
   }
 
-  /* ─── GLOSSARY SIDEBAR ─── */
-  .glossary {
-    position: fixed;
-    right: 32px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    max-height: 60vh;
-    overflow: hidden;
-    z-index: 5;
-    width: 220px;
+  @keyframes heroFadeIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-  .glossary-title {
-    font-size: 8px;
-    letter-spacing: .25em;
+
+  .hero-badge {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.25em;
     text-transform: uppercase;
-    color: var(--gold);
-    font-weight: 500;
-    margin-bottom: 4px;
-    opacity: .7;
+    color: var(--color-accent-light);
+    border: 1px solid rgba(196,153,26,0.3);
+    padding: 0.5rem 1.5rem;
+    border-radius: 100px;
+    margin-bottom: 2.5rem;
+    background: rgba(196,153,26,0.05);
   }
-  .glossary-entry {
+
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    font-weight: 400;
+    color: #FAF8F5;
+    line-height: 1.15;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--color-accent-light);
+  }
+
+  .hero-sub {
+    font-family: var(--font-body);
+    font-size: 1.15rem;
+    color: rgba(250,248,245,0.55);
+    font-weight: 300;
+    margin-top: 1.5rem;
+    line-height: 1.7;
+    max-width: 550px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero-divider {
+    width: 50px;
+    height: 1px;
+    background: var(--color-accent-light);
+    margin: 2.5rem auto;
+    opacity: 0.4;
+  }
+
+  .hero-scroll {
+    margin-top: 3rem;
     display: flex;
     flex-direction: column;
-    gap: 1px;
-    opacity: 0;
-    transform: translateX(20px);
-    animation: slideIn .4s forwards;
-    border-left: 1px solid rgba(196,164,90,.25);
-    padding-left: 10px;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(250,248,245,0.35);
+    font-family: var(--font-ui);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    animation: pulseScroll 2.5s ease-in-out infinite;
   }
-  @keyframes slideIn {
-    to { opacity: 1; transform: translateX(0); }
+
+  .hero-scroll svg { width: 18px; height: 18px; stroke: rgba(250,248,245,0.35); }
+
+  @keyframes pulseScroll {
+    0%, 100% { opacity: 0.4; transform: translateY(0); }
+    50% { opacity: 0.8; transform: translateY(5px); }
   }
-  .glossary-word {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 14px;
-    color: var(--gold-light);
+
+  /* ========== NAV ========== */
+  .course-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(250,248,245,0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--color-border-light);
+    padding: 0;
+  }
+
+  .nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .nav-inner::-webkit-scrollbar { display: none; }
+
+  .nav-links {
+    display: flex;
+    gap: 0;
+    list-style: none;
+    white-space: nowrap;
+  }
+
+  .nav-links a {
+    display: block;
+    padding: 1rem 1.2rem;
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink-muted);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease;
+  }
+
+  .nav-links a:hover {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
+  }
+
+  /* ========== MAIN LAYOUT ========== */
+  .course-body {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+  }
+
+  /* ========== SECTION ========== */
+  .module-section {
+    padding-top: 5rem;
+  }
+
+  .section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-ui);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: 1rem;
+  }
+
+  .section-label .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+    font-weight: 500;
+    color: var(--color-ink);
+    line-height: 1.25;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-subtitle {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    color: var(--color-ink-muted);
+    font-weight: 300;
+    font-style: italic;
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+  }
+
+  .section-intro {
+    font-size: 1.02rem;
+    color: var(--color-ink-soft);
+    line-height: 1.85;
+    margin-bottom: 2rem;
+    max-width: 760px;
+  }
+
+  /* ========== PHRASE CARD ========== */
+  .phrase-group {
+    margin-bottom: 2.5rem;
+  }
+
+  .phrase-group-title {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-soft);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .phrase-card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-light);
+    border-radius: 10px;
+    padding: 1.3rem 1.6rem;
+    margin-bottom: 0.6rem;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .phrase-card:hover {
+    border-color: var(--color-border);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    transform: translateY(-1px);
+  }
+
+  .phrase-en {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: var(--color-ink);
+    line-height: 1.5;
+    margin-bottom: 0.25rem;
+  }
+
+  .phrase-pt {
+    font-family: var(--font-ui);
+    font-size: 0.88rem;
+    color: var(--color-ink-muted);
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  .phrase-note {
+    margin-top: 0.6rem;
+    font-family: var(--font-ui);
+    font-size: 0.78rem;
+    color: var(--color-green);
+    background: var(--color-green-bg);
+    padding: 0.5rem 0.85rem;
+    border-radius: 6px;
+    line-height: 1.55;
+    border-left: 3px solid var(--color-green);
+  }
+
+  .phrase-note.warning {
+    color: var(--color-coral);
+    background: var(--color-coral-bg);
+    border-left-color: var(--color-coral);
+  }
+
+  .phrase-note.tip {
+    color: var(--color-blue);
+    background: var(--color-blue-bg);
+    border-left-color: var(--color-blue);
+  }
+
+  .phrase-note.cultural {
+    color: var(--color-purple);
+    background: var(--color-purple-bg);
+    border-left-color: var(--color-purple);
+  }
+
+  /* ========== DIALOGUE ========== */
+  .dialogue-box {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    padding: 2rem;
+    margin: 2rem 0 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dialogue-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-light), var(--color-accent));
+  }
+
+  .dialogue-header {
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: 0.3rem;
+  }
+
+  .dialogue-context {
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    color: var(--color-ink-muted);
+    margin-bottom: 1.5rem;
     font-style: italic;
   }
-  .glossary-pt {
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: .05em;
+
+  .dialogue-line {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: flex-start;
   }
 
-  /* ─── FOOTER ─── */
-  footer {
-    border-top: 1px solid rgba(196,164,90,.1);
-    padding: 14px 48px;
+  .dialogue-speaker {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    background: linear-gradient(to right, rgba(196,164,90,.04), transparent);
-  }
-  .footer-controls {
-    display: flex; gap: 24px;
-  }
-  .key-hint {
-    display: flex; align-items: center; gap: 6px;
-    font-size: 10px;
-    letter-spacing: .12em;
-    color: var(--muted);
+    justify-content: center;
+    font-family: var(--font-ui);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
+    margin-top: 2px;
   }
-  .key {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 22px; height: 22px;
-    border: 1px solid rgba(196,164,90,.3);
-    color: var(--gold);
-    font-size: 9px;
+
+  .speaker-you {
+    background: var(--color-accent-bg);
+    color: var(--color-accent);
+    border: 1.5px solid rgba(139,105,20,0.2);
+  }
+
+  .speaker-them {
+    background: var(--color-blue-bg);
+    color: var(--color-blue);
+    border: 1.5px solid rgba(43,92,138,0.2);
+  }
+
+  .dialogue-bubble {
+    flex: 1;
+  }
+
+  .dialogue-bubble .en {
+    font-family: var(--font-display);
+    font-size: 1.02rem;
+    color: var(--color-ink);
+    line-height: 1.55;
+    font-weight: 500;
+  }
+
+  .dialogue-bubble .pt {
+    font-family: var(--font-ui);
+    font-size: 0.82rem;
+    color: var(--color-ink-muted);
+    line-height: 1.5;
+    margin-top: 0.15rem;
+  }
+
+  /* ========== VOCAB GRID ========== */
+  .vocab-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 0.5rem;
+    margin: 1.5rem 0 2rem;
+  }
+
+  .vocab-item {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-light);
+    border-radius: 8px;
+    padding: 0.9rem 1.1rem;
+    transition: all 0.25s ease;
+  }
+
+  .vocab-item:hover {
+    border-color: var(--color-border);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+  }
+
+  .vocab-en {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+
+  .vocab-pt {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--color-ink-muted);
+  }
+
+  /* ========== CULTURAL INSIGHT ========== */
+  .cultural-block {
+    background: linear-gradient(135deg, var(--color-purple-bg), var(--color-bg));
+    border: 1px solid rgba(107,76,138,0.12);
+    border-radius: 12px;
+    padding: 1.8rem 2rem;
+    margin: 2rem 0;
+    position: relative;
+  }
+
+  .cultural-block::before {
+    content: '🌍';
+    font-size: 1.3rem;
+    position: absolute;
+    top: -0.7rem;
+    left: 1.5rem;
+    background: var(--color-bg);
+    padding: 0 0.5rem;
+  }
+
+  .cultural-block h4 {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
     font-weight: 600;
-    border-radius: 3px;
-  }
-  .footer-level {
-    font-size: 10px;
-    letter-spacing: .15em;
-    color: var(--muted);
+    letter-spacing: 0.15em;
     text-transform: uppercase;
-  }
-  .footer-level span {
-    color: var(--gold);
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 16px;
-    font-weight: 300;
+    color: var(--color-purple);
+    margin-bottom: 0.7rem;
   }
 
-  /* score pulse */
-  @keyframes scorePulse {
-    0%,100% { transform: scale(1); }
-    50%      { transform: scale(1.15); color: #fff; }
+  .cultural-block p {
+    font-size: 0.95rem;
+    color: var(--color-ink-soft);
+    line-height: 1.75;
   }
-  .pulse { animation: scorePulse .3s ease; }
+
+  /* ========== SCENARIO ALERT ========== */
+  .scenario-alert {
+    background: var(--color-coral-bg);
+    border: 1px solid rgba(184,85,58,0.15);
+    border-radius: 12px;
+    padding: 1.8rem 2rem;
+    margin: 2rem 0;
+    position: relative;
+  }
+
+  .scenario-alert::before {
+    content: '⚠️';
+    font-size: 1.2rem;
+    position: absolute;
+    top: -0.7rem;
+    left: 1.5rem;
+    background: var(--color-bg);
+    padding: 0 0.5rem;
+  }
+
+  .scenario-alert h4 {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-coral);
+    margin-bottom: 0.7rem;
+  }
+
+  .scenario-alert p {
+    font-size: 0.95rem;
+    color: var(--color-ink-soft);
+    line-height: 1.75;
+  }
+
+  /* ========== PRO TIP ========== */
+  .pro-tip {
+    background: linear-gradient(135deg, var(--color-accent-bg), var(--color-bg));
+    border: 1px solid rgba(139,105,20,0.15);
+    border-radius: 12px;
+    padding: 1.8rem 2rem;
+    margin: 2rem 0;
+    position: relative;
+  }
+
+  .pro-tip::before {
+    content: '💡';
+    font-size: 1.2rem;
+    position: absolute;
+    top: -0.7rem;
+    left: 1.5rem;
+    background: var(--color-bg);
+    padding: 0 0.5rem;
+  }
+
+  .pro-tip h4 {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: 0.7rem;
+  }
+
+  .pro-tip p {
+    font-size: 0.95rem;
+    color: var(--color-ink-soft);
+    line-height: 1.75;
+  }
+
+  /* ========== SEPARATOR ========== */
+  .section-sep {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 3rem 0 0;
+  }
+
+  .section-sep::before,
+  .section-sep::after {
+    content: '';
+    flex: 1;
+    max-width: 120px;
+    height: 1px;
+    background: var(--color-border);
+  }
+
+  .section-sep .diamond {
+    width: 6px;
+    height: 6px;
+    background: var(--color-accent-light);
+    transform: rotate(45deg);
+    opacity: 0.5;
+  }
+
+  /* ========== FOOTER ========== */
+  .course-footer {
+    text-align: center;
+    padding: 4rem 2rem;
+    border-top: 1px solid var(--color-border-light);
+    margin-top: 4rem;
+  }
+
+  .footer-brand {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    color: var(--color-ink);
+    margin-bottom: 0.5rem;
+  }
+
+  .footer-text {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--color-ink-muted);
+    line-height: 1.6;
+  }
+
+  /* ========== RESPONSIVE ========== */
+  @media (max-width: 768px) {
+    .course-body { padding: 0 1.2rem 4rem; }
+    .dialogue-box { padding: 1.5rem; }
+    .module-section { padding-top: 3.5rem; }
+    .vocab-grid { grid-template-columns: 1fr; }
+    .nav-links a { padding: 0.9rem 0.9rem; font-size: 0.65rem; }
+  }
+
+  /* ========== ANIMATIONS ========== */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
 </style>
-</head>
-<body>
-
-<!-- Floating geometric decorations -->
-<div class="geo geo-ring"></div>
-<div class="geo geo-ring-2"></div>
-<div class="geo geo-diamond"></div>
-<div class="geo geo-line"></div>
-
-<!-- Word earned toast -->
-<div class="word-earned" id="wordToast"></div>
-
-<!-- Glossary sidebar -->
-<div class="glossary" id="glossary">
-  <div class="glossary-title">Vocabulário adquirido</div>
-</div>
-
-<div class="wrapper">
-  <!-- HEADER -->
-  <header>
-    <div class="brand">
-      <div class="brand-overline">Instituto MD Talk</div>
-      <div class="brand-name">MD <em>Talk</em></div>
+<!-- ==================== HERO ==================== -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">English for Travelers — Módulo Especial</div>
+    <h1>Shopping <em>Abroad</em></h1>
+    <div class="hero-divider"></div>
+    <p class="hero-sub">
+      Um guia completo de inglês para compras no exterior.<br>
+      Todas as frases, diálogos e situações que você precisa dominar — da vitrine ao pós-venda.
+    </p>
+    <div class="hero-scroll">
+      Comece a explorar
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"></path></svg>
     </div>
-    <div class="header-right">
-      <div class="header-tag">Sala de Espera</div>
-      <div class="header-score-label">Score</div>
-      <div class="header-score-val" id="scoreDisplay">0</div>
-    </div>
-  </header>
+  </div>
+</section>
+<!-- ==================== NAV ==================== -->
+<nav class="course-nav">
+  <div class="nav-inner">
+    <ul class="nav-links">
+      <li><a href="#s1">Entrando na Loja</a></li>
+      <li><a href="#s2">Pedindo Ajuda</a></li>
+      <li><a href="#s3">Roupas & Provador</a></li>
+      <li><a href="#s4">Preços & Negociação</a></li>
+      <li><a href="#s5">Pagamento</a></li>
+      <li><a href="#s6">Tax Free</a></li>
+      <li><a href="#s7">Trocas & Devoluções</a></li>
+      <li><a href="#s8">Problemas</a></li>
+      <li><a href="#s9">Eletrônicos</a></li>
+      <li><a href="#s10">Luxo & Joias</a></li>
+      <li><a href="#s11">Mercados & Feiras</a></li>
+      <li><a href="#s12">Supermercado</a></li>
+      <li><a href="#s13">Farmácia</a></li>
+      <li><a href="#s14">Compras Online</a></li>
+    </ul>
+  </div>
+</nav>
+<!-- ==================== COURSE BODY ==================== -->
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p><main class="course-body"><p></p>
+<!-- ============================== SEÇÃO 1 ============================== -->
+<section class="module-section" id="s1">
+  <div class="section-label"><span class="num">1</span> Getting Started</div>
+  <h2 class="section-title">Entrando na Loja</h2>
+  <p class="section-subtitle">Primeiras palavras, primeiras impressões — como soar natural desde o momento em que cruza a porta.</p>
 
-  <!-- ARENA -->
-  <div class="arena" id="arena">
-    <div id="canvas-wrap">
-      <canvas id="game"></canvas>
+  <p class="section-intro">
+    No exterior, vendedores costumam cumprimentar você de forma simpática assim que entra na loja. A maioria espera apenas um sorriso e uma resposta educada. Não precisa iniciar uma conversa longa — mas saber responder com naturalidade faz toda a diferença. Aqui estão as situações mais comuns.
+  </p>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">O vendedor cumprimenta você</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Hi! Welcome in. Let me know if you need anything."</div>
+      <div class="phrase-pt">Oi! Bem-vindo(a). Me avise se precisar de alguma coisa.</div>
+      <div class="phrase-note tip">Essa é a frase mais comum ao entrar em lojas nos EUA. "Welcome in" é mais moderno do que "Welcome".</div>
     </div>
 
-    <!-- START OVERLAY -->
-    <div class="overlay" id="overlayStart">
-      <div class="overlay-overline">Sala de Espera · MD Talk</div>
-      <div class="overlay-title">Enquanto você <em>aguarda</em>,<br>pratique Medical English</div>
-      <div class="overlay-divider"></div>
-      <div class="overlay-sub">
-        Guie a cobra pelo grid e colete<br>
-        termos clínicos em inglês<br>
-        <br>
-        <span style="color:var(--gold-pale); font-size:10px; letter-spacing:.15em">USE AS SETAS OU WASD PARA MOVER</span>
-      </div>
-      <button class="btn-start" id="btnStart">Iniciar</button>
+    <div class="phrase-card">
+      <div class="phrase-en">"Are you looking for anything in particular?"</div>
+      <div class="phrase-pt">Está procurando algo em particular?</div>
     </div>
 
-    <!-- GAME OVER OVERLAY -->
-    <div class="overlay hidden" id="overlayOver">
-      <div class="overlay-overline">Session Ended</div>
-      <div class="overlay-title"><em>Game</em> Over</div>
-      <div class="overlay-divider"></div>
-      <div class="overlay-score-display" id="finalScore">0</div>
-      <div class="overlay-score-label">termos coletados</div>
-      <div class="overlay-sub" id="lastWord"></div>
-      <button class="btn-start" id="btnRestart">Nova Sessão</button>
+    <div class="phrase-card">
+      <div class="phrase-en">"Can I help you find something?"</div>
+      <div class="phrase-pt">Posso ajudar a encontrar alguma coisa?</div>
     </div>
   </div>
 
-  <!-- FOOTER -->
-  <footer>
-    <div class="footer-controls">
-      <div class="key-hint"><div class="key">↑</div><div class="key">↓</div><div class="key">←</div><div class="key">→</div> mover</div>
-      <div class="key-hint"><div class="key" style="width:32px">P</div> pausar</div>
+  <div class="phrase-group">
+    <div class="phrase-group-title">Suas respostas — quando quer só olhar</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Hi, thanks! I'm just browsing."</div>
+      <div class="phrase-pt">Oi, obrigado(a)! Só estou olhando.</div>
+      <div class="phrase-note">"Browsing" é a palavra perfeita para "só dando uma olhada". É educada e natural.</div>
     </div>
-    <div class="footer-level">Nível <span id="levelDisplay">I</span></div>
-  </footer>
-</div>
 
-<script>
-// ─── MEDICAL VOCABULARY ───────────────────────────────────────────────────────
-const VOCAB = [
-  { en: 'dyspnea',        pt: 'dispneia' },
-  { en: 'tachycardia',    pt: 'taquicardia' },
-  { en: 'bradycardia',    pt: 'bradicardia' },
-  { en: 'hypertension',   pt: 'hipertensão' },
-  { en: 'hypoxia',        pt: 'hipóxia' },
-  { en: 'edema',          pt: 'edema' },
-  { en: 'syncope',        pt: 'síncope' },
-  { en: 'auscultation',   pt: 'ausculta' },
-  { en: 'pallor',         pt: 'palidez' },
-  { en: 'cyanosis',       pt: 'cianose' },
-  { en: 'hemoptysis',     pt: 'hemoptise' },
-  { en: 'dysphagia',      pt: 'disfagia' },
-  { en: 'paraesthesia',   pt: 'parestesia' },
-  { en: 'vertigo',        pt: 'vertigem' },
-  { en: 'prognosis',      pt: 'prognóstico' },
-  { en: 'anamnesis',      pt: 'anamnese' },
-  { en: 'triage',         pt: 'triagem' },
-  { en: 'palpation',      pt: 'palpação' },
-  { en: 'percussion',     pt: 'percussão' },
-  { en: 'jaundice',       pt: 'icterícia' },
-  { en: 'diuresis',       pt: 'diurese' },
-  { en: 'embolism',       pt: 'embolia' },
-  { en: 'ischemia',       pt: 'isquemia' },
-  { en: 'infarction',     pt: 'infarto' },
-  { en: 'necrosis',       pt: 'necrose' },
-  { en: 'fibrosis',       pt: 'fibrose' },
-  { en: 'stenosis',       pt: 'estenose' },
-  { en: 'thrombosis',     pt: 'trombose' },
-  { en: 'septicemia',     pt: 'septicemia' },
-  { en: 'hemostasis',     pt: 'hemostasia' },
-  { en: 'diaphoresis',    pt: 'diaforese' },
-  { en: 'epistaxis',      pt: 'epistaxe' },
-  { en: 'oliguria',       pt: 'oligúria' },
-  { en: 'anuria',         pt: 'anúria' },
-  { en: 'hematuria',      pt: 'hematúria' },
-  { en: 'cachexia',       pt: 'caquexia' },
-  { en: 'ascites',        pt: 'ascite' },
-  { en: 'atelectasis',    pt: 'atelectasia' },
-  { en: 'pneumothorax',   pt: 'pneumotórax' },
-  { en: 'emphysema',      pt: 'enfisema' },
-];
+    <div class="phrase-card">
+      <div class="phrase-en">"I'm just looking around, thank you."</div>
+      <div class="phrase-pt">Estou só dando uma olhada, obrigado(a).</div>
+    </div>
 
-const ROMAN = ['I','II','III','IV','V','VI','VII'];
+    <div class="phrase-card">
+      <div class="phrase-en">"Thanks, I'll let you know if I need help."</div>
+      <div class="phrase-pt">Obrigado(a), aviso se precisar de ajuda.</div>
+    </div>
+  </div>
 
-// ─── CANVAS SETUP ────────────────────────────────────────────────────────────
-const canvas = document.getElementById('game');
-const ctx    = canvas.getContext('2d');
-const arena  = document.getElementById('arena');
+  <div class="phrase-group">
+    <div class="phrase-group-title">Quando você quer ajuda desde o início</div>
 
-let COLS, ROWS, CELL, W, H;
+    <div class="phrase-card">
+      <div class="phrase-en">"Actually, yes — I'm looking for a gift for my wife/husband."</div>
+      <div class="phrase-pt">Na verdade, sim — estou procurando um presente para minha esposa/meu marido.</div>
+    </div>
 
-function resize() {
-  const pad  = 32;
-  const aw   = arena.clientWidth  - pad * 2;
-  const ah   = arena.clientHeight - pad * 2;
-  CELL = window.innerWidth < 700 ? 36 : 44;
-  COLS = Math.floor(aw / CELL);
-  ROWS = Math.floor(ah / CELL);
-  // keep odd for centering
-  if (COLS % 2 === 0) COLS--;
-  if (ROWS % 2 === 0) ROWS--;
-  COLS = Math.max(11, COLS);
-  ROWS = Math.max(9,  ROWS);
-  W = COLS * CELL;
-  H = ROWS * CELL;
-  canvas.width  = W;
-  canvas.height = H;
-}
-resize();
+    <div class="phrase-card">
+      <div class="phrase-en">"Hi! I saw something in the window display. Could you show it to me?"</div>
+      <div class="phrase-pt">Oi! Vi algo na vitrine. Você poderia me mostrar?</div>
+      <div class="phrase-note tip"><strong>Window display</strong> = vitrine. Nunca diga "vitrine" em inglês — ninguém vai entender.</div>
+    </div>
 
-// ─── GAME STATE ──────────────────────────────────────────────────────────────
-let snake, dir, nextDir, food, score, level, speed, paused, running, intervalId;
-let collected = [];
-let foodItem  = null;
+    <div class="phrase-card">
+      <div class="phrase-en">"I'm looking for something specific. Can you help me?"</div>
+      <div class="phrase-pt">Estou procurando algo específico. Você pode me ajudar?</div>
+    </div>
+  </div>
 
-function initGame() {
-  resize();
-  const cx = Math.floor(COLS / 2);
-  const cy = Math.floor(ROWS / 2);
-  snake   = [{ x: cx, y: cy }, { x: cx - 1, y: cy }, { x: cx - 2, y: cy }];
-  dir     = { x: 1, y: 0 };
-  nextDir = { x: 1, y: 0 };
-  score   = 0;
-  level   = 1;
-  speed   = 200;
-  paused  = false;
-  running = true;
-  collected = [];
-  foodItem  = null;
-  updateScoreDisplay();
-  updateLevelDisplay();
-  placeFood();
-  clearInterval(intervalId);
-  intervalId = setInterval(tick, speed);
-}
+  <div class="cultural-block">
+    <h4>Nota Cultural</h4>
+    <p>Nos Estados Unidos, vendedores são muito comunicativos e podem abordar você mais de uma vez. Não se irrite — é parte da cultura de atendimento. Um simples <strong>"I'm good, thanks!"</strong> (Estou bem, obrigado!) resolve. No Reino Unido, o atendimento tende a ser mais discreto. Na Europa continental, é considerado educado dizer <strong>"Bonjour"</strong>, <strong>"Buongiorno"</strong> ou <strong>"Hallo"</strong> ao entrar — mesmo que depois mude para o inglês.</p>
+  </div>
+</section>
+<div class="section-sep"><span class="diamond"></span></div>
+<!-- ============================== SEÇÃO 2 ============================== -->
+<section class="module-section" id="s2">
+  <div class="section-label"><span class="num">2</span> Getting Help</div>
+  <h2 class="section-title">Pedindo Ajuda ao Vendedor</h2>
+  <p class="section-subtitle">Como descrever o que você quer — mesmo quando não sabe o nome em inglês.</p>
 
-// ─── FOOD WORDS ──────────────────────────────────────────────────────────────
-function placeFood() {
-  const remaining = VOCAB.filter(v => !collected.find(c => c.en === v.en));
-  const pool = remaining.length > 0 ? remaining : VOCAB;
-  const item = pool[Math.floor(Math.random() * pool.length)];
-  let x, y, safe;
-  let tries = 0;
-  do {
-    x = 1 + Math.floor(Math.random() * (COLS - 2));
-    y = 1 + Math.floor(Math.random() * (ROWS - 2));
-    safe = !snake.some(s => s.x === x && s.y === y);
-    tries++;
-  } while (!safe && tries < 200);
-  foodItem = { x, y, ...item };
-}
+  <p class="section-intro">
+    Uma das situações mais comuns é precisar de algo, mas não saber exatamente como descrever em inglês. A boa notícia: vendedores estão acostumados a ajudar — basta dar pistas. Aprenda a pedir por cor, tamanho, material, ocasião e estilo.
+  </p>
 
-// ─── TICK ────────────────────────────────────────────────────────────────────
-function tick() {
-  if (!running || paused) return;
-  dir = { ...nextDir };
+  <div class="phrase-group">
+    <div class="phrase-group-title">Pedindo por categoria</div>
 
-  const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+    <div class="phrase-card">
+      <div class="phrase-en">"Do you have this in a different color?"</div>
+      <div class="phrase-pt">Vocês têm isso em outra cor?</div>
+    </div>
 
-  // wall collision
-  if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) {
-    gameOver(); return;
-  }
-  // self collision
-  if (snake.some(s => s.x === head.x && s.y === head.y)) {
-    gameOver(); return;
-  }
+    <div class="phrase-card">
+      <div class="phrase-en">"I'm looking for something more casual / more formal."</div>
+      <div class="phrase-pt">Estou procurando algo mais casual / mais formal.</div>
+    </div>
 
-  snake.unshift(head);
+    <div class="phrase-card">
+      <div class="phrase-en">"Do you carry leather bags?"</div>
+      <div class="phrase-pt">Vocês trabalham com bolsas de couro?</div>
+      <div class="phrase-note tip"><strong>"Do you carry…?"</strong> é a forma idiomática de perguntar se a loja vende determinado tipo de produto. Muito mais natural do que "Do you sell…?"</div>
+    </div>
 
-  if (foodItem && head.x === foodItem.x && head.y === foodItem.y) {
-    eatFood();
-  } else {
-    snake.pop();
-  }
+    <div class="phrase-card">
+      <div class="phrase-en">"I need something for a formal event / a wedding / a business dinner."</div>
+      <div class="phrase-pt">Preciso de algo para um evento formal / um casamento / um jantar de negócios.</div>
+    </div>
 
-  draw();
-}
+    <div class="phrase-card">
+      <div class="phrase-en">"I'm looking for something lightweight — I'll be traveling."</div>
+      <div class="phrase-pt">Estou procurando algo leve — vou viajar.</div>
+    </div>
+  </div>
 
-function eatFood() {
-  score++;
-  collected.unshift({ en: foodItem.en, pt: foodItem.pt });
-  if (collected.length > 8) collected = collected.slice(0, 8);
-  showWordToast(foodItem);
-  updateGlossary();
-  updateScoreDisplay();
+  <div class="phrase-group">
+    <div class="phrase-group-title">Quando você não sabe o nome do produto</div>
 
-  // level up every 5 words
-  const newLevel = Math.floor(score / 5) + 1;
-  if (newLevel !== level) {
-    level = Math.min(newLevel, 7);
-    speed = Math.max(80, 200 - (level - 1) * 18);
-    clearInterval(intervalId);
-    intervalId = setInterval(tick, speed);
-    updateLevelDisplay();
-  }
-  placeFood();
-}
+    <div class="phrase-card">
+      <div class="phrase-en">"I'm not sure what it's called, but it's a small bag that goes across your body."</div>
+      <div class="phrase-pt">Não sei o nome, mas é uma bolsa pequena que cruza o corpo. (= crossbody bag)</div>
+      <div class="phrase-note">Descrever o produto funciona perfeitamente. Vendedores lidam com isso o tempo todo.</div>
+    </div>
 
-function gameOver() {
-  running = false;
-  clearInterval(intervalId);
-  draw(); // draw final state
-  setTimeout(() => showOverlay('over'), 600);
-}
+    <div class="phrase-card">
+      <div class="phrase-en">"It's like a jacket, but thinner — not for winter, more like a spring jacket."</div>
+      <div class="phrase-pt">É tipo uma jaqueta, mas mais fina — não para inverno, mais como uma jaqueta de meia-estação.</div>
+    </div>
 
-// ─── DRAWING ─────────────────────────────────────────────────────────────────
-function draw() {
-  ctx.clearRect(0, 0, W, H);
+    <div class="phrase-card">
+      <div class="phrase-en">"I saw it online / on Instagram. Do you have it in store?"</div>
+      <div class="phrase-pt">Vi na internet / no Instagram. Vocês têm na loja física?</div>
+    </div>
+  </div>
 
-  // subtle grid lines
-  ctx.strokeStyle = 'rgba(196,164,90,.04)';
-  ctx.lineWidth = 1;
-  for (let c = 0; c <= COLS; c++) {
-    ctx.beginPath(); ctx.moveTo(c * CELL, 0); ctx.lineTo(c * CELL, H); ctx.stroke();
-  }
-  for (let r = 0; r <= ROWS; r++) {
-    ctx.beginPath(); ctx.moveTo(0, r * CELL); ctx.lineTo(W, r * CELL); ctx.stroke();
-  }
+  <div class="phrase-group">
+    <div class="phrase-group-title">Perguntando sobre material e qualidade</div>
 
-  // food word
-  if (foodItem) drawFoodWord(foodItem);
+    <div class="phrase-card">
+      <div class="phrase-en">"What is this made of?"</div>
+      <div class="phrase-pt">De que é feito?</div>
+    </div>
 
-  // snake
-  drawSnake();
-}
+    <div class="phrase-card">
+      <div class="phrase-en">"Is this real leather or synthetic?"</div>
+      <div class="phrase-pt">Isso é couro legítimo ou sintético?</div>
+    </div>
 
-function drawSnake() {
-  const len = snake.length;
-  snake.forEach((seg, i) => {
-    const t = i / len; // 0 = head, 1 = tail
-    const x = seg.x * CELL;
-    const y = seg.y * CELL;
-    const pad = 3 + t * 4;
-    const r   = (CELL / 2 - pad);
-    const alpha = 1 - t * 0.6;
+    <div class="phrase-card">
+      <div class="phrase-en">"Is this machine washable?"</div>
+      <div class="phrase-pt">Pode lavar na máquina?</div>
+    </div>
 
-    if (i === 0) {
-      // head — gold with glow
-      ctx.save();
-      ctx.shadowColor  = 'rgba(196,164,90,.7)';
-      ctx.shadowBlur   = 18;
-      ctx.fillStyle    = '#C4A45A';
-      roundRect(ctx, x + 3, y + 3, CELL - 6, CELL - 6, 6);
-      ctx.fill();
-      ctx.restore();
+    <div class="phrase-card">
+      <div class="phrase-en">"Does this wrinkle easily?"</div>
+      <div class="phrase-pt">Isso amassa fácil?</div>
+      <div class="phrase-note tip"><strong>Wrinkle</strong> = amassar (tecido). Perfeito para quem está comprando roupas para a mala.</div>
+    </div>
 
-      // eyes
-      const eyeSize = 3;
-      ctx.fillStyle = '#050D1A';
-      const ex1 = x + CELL/2 - 4, ey1 = y + CELL/2 - 4;
-      const ex2 = x + CELL/2 + 2, ey2 = y + CELL/2 - 4;
+    <div class="phrase-card">
+      <div class="phrase-en">"Does it come with a warranty?"</div>
+      <div class="phrase-pt">Vem com garantia?</div>
+    </div>
+  </div>
 
-      if (dir.x === 1)  { drawEyes(x + CELL - 10, y + CELL/2 - 4, x + CELL - 10, y + CELL/2 + 2); }
-      else if (dir.x === -1) { drawEyes(x + 6, y + CELL/2 - 4, x + 6, y + CELL/2 + 2); }
-      else if (dir.y === -1) { drawEyes(x + CELL/2 - 4, y + 6, x + CELL/2 + 2, y + 6); }
-      else              { drawEyes(x + CELL/2 - 4, y + CELL - 10, x + CELL/2 + 2, y + CELL - 10); }
+  <!-- DIALOGUE -->
+  <div class="dialogue-box">
+    <div class="dialogue-header">Diálogo Prático</div>
+    <div class="dialogue-context">Em uma loja de departamentos — você procura um presente</div>
 
-    } else {
-      // body — gradient from gold to transparent
-      const gAlpha = Math.max(0.08, alpha);
-      ctx.fillStyle = `rgba(196,164,90,${gAlpha})`;
-      roundRect(ctx, x + 4 + t * 2, y + 4 + t * 2, CELL - 8 - t * 4, CELL - 8 - t * 4, 5);
-      ctx.fill();
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-them">SA</div>
+      <div class="dialogue-bubble">
+        <div class="en">Hi there! Are you shopping for yourself today?</div>
+        <div class="pt">Oi! Está comprando para você hoje?</div>
+      </div>
+    </div>
 
-      // inner shine
-      if (alpha > 0.3) {
-        ctx.fillStyle = `rgba(212,186,122,${gAlpha * 0.4})`;
-        roundRect(ctx, x + 7, y + 7, CELL - 14, 4, 2);
-        ctx.fill();
-      }
-    }
-  });
-}
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-you">You</div>
+      <div class="dialogue-bubble">
+        <div class="en">Actually, I'm looking for a gift for my mother. Maybe a scarf or a nice wallet.</div>
+        <div class="pt">Na verdade, estou procurando um presente para minha mãe. Talvez um cachecol ou uma carteira bonita.</div>
+      </div>
+    </div>
 
-function drawEyes(x1, y1, x2, y2) {
-  ctx.fillStyle = '#050D1A';
-  ctx.beginPath(); ctx.arc(x1 + 2, y1 + 2, 2.5, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(x2 + 2, y2 + 2, 2.5, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,0.7)';
-  ctx.beginPath(); ctx.arc(x1 + 3, y1 + 1, 1, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(x2 + 3, y2 + 1, 1, 0, Math.PI * 2); ctx.fill();
-}
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-them">SA</div>
+      <div class="dialogue-bubble">
+        <div class="en">Great choices! What's your budget? I can show you a few options.</div>
+        <div class="pt">Ótimas opções! Qual é o seu orçamento? Posso mostrar algumas opções.</div>
+      </div>
+    </div>
 
-function drawFoodWord(item) {
-  const x = item.x * CELL;
-  const y = item.y * CELL;
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-you">You</div>
+      <div class="dialogue-bubble">
+        <div class="en">I'd say around a hundred to a hundred and fifty dollars.</div>
+        <div class="pt">Diria que entre cem e cento e cinquenta dólares.</div>
+      </div>
+    </div>
 
-  // pulsing glow halo
-  const time = Date.now() / 1000;
-  const pulse = 0.5 + 0.5 * Math.sin(time * 3);
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-them">SA</div>
+      <div class="dialogue-bubble">
+        <div class="en">Perfect. Let me show you what we have in that range. Follow me.</div>
+        <div class="pt">Perfeito. Deixe eu mostrar o que temos nessa faixa. Me acompanhe.</div>
+      </div>
+    </div>
+  </div>
 
-  ctx.save();
-  ctx.shadowColor  = `rgba(196,164,90,${0.4 + pulse * 0.4})`;
-  ctx.shadowBlur   = 16 + pulse * 10;
+  <div class="pro-tip">
+    <h4>Dica de Ouro</h4>
+    <p>Quando um vendedor pergunta <strong>"What's your budget?"</strong>, não se sinta desconfortável. É uma pergunta 100% normal e profissional. Responder com uma faixa de preço (<strong>"around $100 to $150"</strong>) é mais natural do que dar um valor exato.</p>
+  </div>
+</section>
+<div class="section-sep"><span class="diamond"></span></div>
+<!-- ============================== SEÇÃO 3 ============================== -->
+<section class="module-section" id="s3">
+  <div class="section-label"><span class="num">3</span> Fitting Room</div>
+  <h2 class="section-title">Roupas, Tamanhos e Provador</h2>
+  <p class="section-subtitle">Tudo sobre experimentar roupas — do "posso provar?" ao "ficou perfeito".</p>
 
-  // cell highlight
-  const grad = ctx.createRadialGradient(x + CELL/2, y + CELL/2, 2, x + CELL/2, y + CELL/2, CELL);
-  grad.addColorStop(0, `rgba(196,164,90,${0.22 + pulse * 0.1})`);
-  grad.addColorStop(1, 'rgba(196,164,90,0)');
-  ctx.fillStyle = grad;
-  roundRect(ctx, x + 1, y + 1, CELL - 2, CELL - 2, 8);
-  ctx.fill();
+  <div class="phrase-group">
+    <div class="phrase-group-title">Tamanhos</div>
 
-  // border
-  ctx.strokeStyle = `rgba(196,164,90,${0.5 + pulse * 0.3})`;
-  ctx.lineWidth   = 1.5;
-  roundRect(ctx, x + 2, y + 2, CELL - 4, CELL - 4, 7);
-  ctx.stroke();
-  ctx.restore();
+    <div class="phrase-card">
+      <div class="phrase-en">"What size is this?"</div>
+      <div class="phrase-pt">Que tamanho é esse?</div>
+    </div>
 
-  // word — adaptive font size
-  const word = item.en;
-  const maxW  = CELL * 3.2;
-  let fontSize = 11;
-  ctx.font = `500 ${fontSize}px 'Raleway', sans-serif`;
-  while (ctx.measureText(word).width > maxW - 8 && fontSize > 7) {
-    fontSize--;
-    ctx.font = `500 ${fontSize}px 'Raleway', sans-serif`;
-  }
+    <div class="phrase-card">
+      <div class="phrase-en">"Do you have this in a size medium / in a size 8?"</div>
+      <div class="phrase-pt">Vocês têm isso no tamanho médio / no tamanho 8?</div>
+    </div>
 
-  ctx.save();
-  ctx.shadowColor = 'rgba(196,164,90,.8)';
-  ctx.shadowBlur  = 8;
-  ctx.fillStyle   = `rgba(232,217,176,${0.85 + pulse * 0.15})`;
-  ctx.textAlign   = 'center';
-  ctx.textBaseline = 'middle';
+    <div class="phrase-card">
+      <div class="phrase-en">"I usually wear a small in European sizing. What would that be here?"</div>
+      <div class="phrase-pt">Normalmente uso P na numeração europeia. Qual seria aqui?</div>
+      <div class="phrase-note warning">Tamanhos variam muito entre países. Sempre pergunte — não assuma que seu número é o mesmo.</div>
+    </div>
 
-  // draw word ABOVE the cell if it would overflow right
-  const textX = x + CELL / 2;
-  let textY   = y - 10; // above cell
-  if (textY < 14) textY = y + CELL + 14; // below instead
+    <div class="phrase-card">
+      <div class="phrase-en">"Do you have a size chart?"</div>
+      <div class="phrase-pt">Vocês têm uma tabela de tamanhos?</div>
+    </div>
 
-  ctx.font = `500 ${fontSize}px 'Raleway', sans-serif`;
-  ctx.letterSpacing = '0.1em';
-  ctx.fillText(word.toUpperCase(), textX, textY);
+    <div class="phrase-card">
+      <div class="phrase-en">"I think I need a size up / a size down."</div>
+      <div class="phrase-pt">Acho que preciso de um número acima / um número abaixo.</div>
+    </div>
+  </div>
 
-  // small gold dot on the cell center
-  ctx.fillStyle = `rgba(196,164,90,${0.7 + pulse * 0.3})`;
-  ctx.beginPath(); ctx.arc(x + CELL/2, y + CELL/2, 4, 0, Math.PI * 2); ctx.fill();
+  <div class="phrase-group">
+    <div class="phrase-group-title">No provador</div>
 
-  ctx.restore();
-}
+    <div class="phrase-card">
+      <div class="phrase-en">"Where are the fitting rooms?"</div>
+      <div class="phrase-pt">Onde ficam os provadores?</div>
+      <div class="phrase-note tip"><strong>Fitting room</strong> (EUA) ou <strong>changing room</strong> (Reino Unido). Ambos são corretos.</div>
+    </div>
 
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-}
+    <div class="phrase-card">
+      <div class="phrase-en">"Can I try this on?"</div>
+      <div class="phrase-pt">Posso experimentar isso?</div>
+    </div>
 
-// ─── UI UPDATES ──────────────────────────────────────────────────────────────
-function updateScoreDisplay() {
-  const el = document.getElementById('scoreDisplay');
-  el.textContent = score;
-  el.classList.remove('pulse');
-  void el.offsetWidth;
-  el.classList.add('pulse');
-}
+    <div class="phrase-card">
+      <div class="phrase-en">"How many items can I bring in?"</div>
+      <div class="phrase-pt">Quantas peças posso levar para o provador?</div>
+    </div>
 
-function updateLevelDisplay() {
-  document.getElementById('levelDisplay').textContent = ROMAN[level - 1] || level;
-}
+    <div class="phrase-card">
+      <div class="phrase-en">"It fits perfectly."</div>
+      <div class="phrase-pt">Serviu perfeitamente.</div>
+    </div>
 
-function showWordToast(item) {
-  const el = document.getElementById('wordToast');
-  el.textContent = `${item.en} — ${item.pt}`;
-  el.classList.remove('show');
-  void el.offsetWidth;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 900);
-}
+    <div class="phrase-card">
+      <div class="phrase-en">"It's a bit tight around the waist / loose in the shoulders."</div>
+      <div class="phrase-pt">Está um pouco apertado na cintura / folgado nos ombros.</div>
+    </div>
 
-function updateGlossary() {
-  const g = document.getElementById('glossary');
-  // keep title
-  const title = g.querySelector('.glossary-title');
-  g.innerHTML = '';
-  g.appendChild(title);
-  collected.slice(0, 6).forEach((item, i) => {
-    const entry = document.createElement('div');
-    entry.className = 'glossary-entry';
-    entry.style.animationDelay = `${i * 50}ms`;
-    entry.innerHTML = `<div class="glossary-word">${item.en}</div><div class="glossary-pt">${item.pt}</div>`;
-    g.appendChild(entry);
-  });
-}
+    <div class="phrase-card">
+      <div class="phrase-en">"Do you have this in a different cut? Something more relaxed, maybe?"</div>
+      <div class="phrase-pt">Vocês têm isso em outro corte? Algo mais solto, talvez?</div>
+    </div>
 
-function showOverlay(which) {
-  document.getElementById('overlayStart').classList.add('hidden');
-  document.getElementById('overlayOver').classList.add('hidden');
-  if (which === 'start') {
-    document.getElementById('overlayStart').classList.remove('hidden');
-  } else if (which === 'over') {
-    document.getElementById('finalScore').textContent = score;
-    const last = collected[0];
-    document.getElementById('lastWord').textContent = last
-      ? `Último termo: ${last.en} — ${last.pt}`
-      : 'Continue praticando!';
-    document.getElementById('overlayOver').classList.remove('hidden');
-  }
-}
+    <div class="phrase-card">
+      <div class="phrase-en">"I'll take it!" / "I'll pass on this one."</div>
+      <div class="phrase-pt">Vou levar! / Vou deixar esse.</div>
+    </div>
+  </div>
 
-// ─── ANIMATION LOOP (for food pulse while running) ────────────────────────────
-let rafId;
-function animate() {
-  if (running && !paused) draw();
-  rafId = requestAnimationFrame(animate);
-}
-animate();
+  <div class="vocab-grid">
+    <div class="vocab-item"><div class="vocab-en">tight</div><div class="vocab-pt">apertado</div></div>
+    <div class="vocab-item"><div class="vocab-en">loose / baggy</div><div class="vocab-pt">folgado / largo</div></div>
+    <div class="vocab-item"><div class="vocab-en">slim fit</div><div class="vocab-pt">corte justo</div></div>
+    <div class="vocab-item"><div class="vocab-en">oversized</div><div class="vocab-pt">tamanho acima proposital</div></div>
+    <div class="vocab-item"><div class="vocab-en">true to size</div><div class="vocab-pt">fiel ao tamanho</div></div>
+    <div class="vocab-item"><div class="vocab-en">runs small / runs large</div><div class="vocab-pt">veste menor / veste maior</div></div>
+    <div class="vocab-item"><div class="vocab-en">hemmed / tailored</div><div class="vocab-pt">ajustado / sob medida</div></div>
+    <div class="vocab-item"><div class="vocab-en">length / inseam</div><div class="vocab-pt">comprimento / gancho</div></div>
+  </div>
 
-// ─── CONTROLS ────────────────────────────────────────────────────────────────
-document.addEventListener('keydown', e => {
-  const key = e.key;
-  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d'].includes(key)) {
-    e.preventDefault();
-  }
-  if (!running) return;
-  if (key === 'p' || key === 'P') {
-    paused = !paused;
-    return;
-  }
-  const map = {
-    ArrowUp:    { x: 0,  y: -1 },
-    ArrowDown:  { x: 0,  y:  1 },
-    ArrowLeft:  { x: -1, y:  0 },
-    ArrowRight: { x: 1,  y:  0 },
-    w:          { x: 0,  y: -1 },
-    s:          { x: 0,  y:  1 },
-    a:          { x: -1, y:  0 },
-    d:          { x: 1,  y:  0 },
-  };
-  const nd = map[key];
-  if (nd && !(nd.x === -dir.x && nd.y === -dir.y)) {
-    nextDir = nd;
-  }
-});
+  <!-- DIALOGUE -->
+  <div class="dialogue-box">
+    <div class="dialogue-header">Diálogo Prático</div>
+    <div class="dialogue-context">Provando um blazer em uma loja de roupas</div>
 
-// Touch/swipe support
-let touchStart = null;
-canvas.addEventListener('touchstart', e => {
-  touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-}, { passive: true });
-canvas.addEventListener('touchend', e => {
-  if (!touchStart) return;
-  const dx = e.changedTouches[0].clientX - touchStart.x;
-  const dy = e.changedTouches[0].clientY - touchStart.y;
-  if (Math.abs(dx) > Math.abs(dy)) {
-    const nd = dx > 0 ? { x: 1, y: 0 } : { x: -1, y: 0 };
-    if (!(nd.x === -dir.x)) nextDir = nd;
-  } else {
-    const nd = dy > 0 ? { x: 0, y: 1 } : { x: 0, y: -1 };
-    if (!(nd.y === -dir.y)) nextDir = nd;
-  }
-  touchStart = null;
-}, { passive: true });
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-you">You</div>
+      <div class="dialogue-bubble">
+        <div class="en">Excuse me, can I try this blazer on? I'm not sure about the size.</div>
+        <div class="pt">Com licença, posso experimentar esse blazer? Não tenho certeza do tamanho.</div>
+      </div>
+    </div>
 
-// ─── BUTTONS ─────────────────────────────────────────────────────────────────
-document.getElementById('btnStart').addEventListener('click', () => {
-  document.getElementById('overlayStart').classList.add('hidden');
-  initGame();
-});
-document.getElementById('btnRestart').addEventListener('click', () => {
-  document.getElementById('overlayOver').classList.add('hidden');
-  initGame();
-});
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-them">SA</div>
+      <div class="dialogue-bubble">
+        <div class="en">Of course! The fitting rooms are right over there. What size are you?</div>
+        <div class="pt">Claro! Os provadores ficam ali. Qual é o seu tamanho?</div>
+      </div>
+    </div>
 
-// ─── RESIZE ──────────────────────────────────────────────────────────────────
-window.addEventListener('resize', () => {
-  if (!running) { resize(); draw(); }
-});
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-you">You</div>
+      <div class="dialogue-bubble">
+        <div class="en">I'm usually a 40 in European sizing. I'm not sure what that is here.</div>
+        <div class="pt">Normalmente uso 40 na numeração europeia. Não sei o equivalente aqui.</div>
+      </div>
+    </div>
 
-// initial draw
-draw();
-</script>
-</body>
-</html>
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-them">SA</div>
+      <div class="dialogue-bubble">
+        <div class="en">That would be around a medium. Let me grab you a medium and a large just in case.</div>
+        <div class="pt">Seria mais ou menos um médio. Deixe eu pegar um M e um G por garantia.</div>
+      </div>
+    </div>
+
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-you">You</div>
+      <div class="dialogue-bubble">
+        <div class="en">The medium fits great in the chest, but the sleeves are a bit long. Can this be altered?</div>
+        <div class="pt">O médio ficou ótimo no peito, mas as mangas estão um pouco compridas. Dá para ajustar?</div>
+      </div>
+    </div>
+
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-them">SA</div>
+      <div class="dialogue-bubble">
+        <div class="en">Absolutely! We offer free alterations. It takes about three business days.</div>
+        <div class="pt">Com certeza! Oferecemos ajustes gratuitos. Leva cerca de três dias úteis.</div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="section-sep"><span class="diamond"></span></div>
+<!-- ============================== SEÇÃO 4 ============================== -->
+<section class="module-section" id="s4">
+  <div class="section-label"><span class="num">4</span> Prices & Deals</div>
+  <h2 class="section-title">Preços, Descontos e Negociação</h2>
+  <p class="section-subtitle">Como perguntar preços, entender promoções e — quando apropriado — negociar.</p>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Perguntando o preço</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"How much is this?"</div>
+      <div class="phrase-pt">Quanto custa isso?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"What's the price on this one?"</div>
+      <div class="phrase-pt">Qual é o preço desse?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Is this on sale?"</div>
+      <div class="phrase-pt">Isso está em promoção?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Is there a discount if I buy more than one?"</div>
+      <div class="phrase-pt">Tem desconto se eu comprar mais de um?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Does this price include tax?"</div>
+      <div class="phrase-pt">Esse preço inclui imposto?</div>
+      <div class="phrase-note warning">Nos EUA, o imposto (sales tax) <strong>não</strong> está incluído no preço da etiqueta. Você paga mais no caixa. É uma surpresa muito comum para brasileiros.</div>
+    </div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Entendendo promoções</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Buy one, get one free." (BOGO)</div>
+      <div class="phrase-pt">Compre um, leve outro grátis.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Buy two, get one 50% off."</div>
+      <div class="phrase-pt">Compre dois, ganhe 50% de desconto no terceiro.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Up to 70% off selected items."</div>
+      <div class="phrase-pt">Até 70% de desconto em itens selecionados.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Clearance" / "Final sale — no returns"</div>
+      <div class="phrase-pt">Liquidação / Venda final — sem devoluções</div>
+      <div class="phrase-note warning"><strong>"Final sale"</strong> significa que o item NÃO pode ser trocado nem devolvido. Cuidado! Leia sempre antes de comprar.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Do you have a loyalty program or rewards card?"</div>
+      <div class="phrase-pt">Vocês têm programa de fidelidade ou cartão de pontos?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Do you offer a student / military / senior discount?"</div>
+      <div class="phrase-pt">Vocês oferecem desconto para estudante / militar / idoso?</div>
+    </div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Negociação (em mercados e feiras)</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Is there any flexibility on the price?"</div>
+      <div class="phrase-pt">Tem alguma flexibilidade no preço?</div>
+      <div class="phrase-note">Essa é a forma mais elegante e indireta de pedir um desconto. Funciona bem em qualquer contexto.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Could you do any better on this?"</div>
+      <div class="phrase-pt">Consegue melhorar esse valor?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"What's the best price you can give me if I take both?"</div>
+      <div class="phrase-pt">Qual o melhor preço se eu levar os dois?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"That's a bit more than I wanted to spend. Would you consider [amount]?"</div>
+      <div class="phrase-pt">É um pouco mais do que eu queria gastar. Você consideraria [valor]?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I'll think about it." / "I need to walk around a bit."</div>
+      <div class="phrase-pt">Vou pensar. / Preciso dar mais uma volta.</div>
+      <div class="phrase-note tip">Dizer que vai pensar é uma estratégia de negociação educada — e funciona. Muitos vendedores oferecem um preço melhor quando você faz menção de sair.</div>
+    </div>
+  </div>
+
+  <div class="cultural-block">
+    <h4>Nota Cultural</h4>
+    <p>Em lojas de departamento, outlets e grandes redes nos EUA e Europa, <strong>os preços são fixos</strong> — negociar seria considerado inapropriado. A negociação é natural em feiras, mercados de rua (como Grand Bazaar em Istambul, mercados de Marrakech, feiras de Bangkok) e, em alguns casos, em lojas de antiquários. Em outlets premium, a "negociação" é simplesmente perguntar sobre cupons adicionais ou descontos combinados.</p>
+  </div>
+</section>
+<div class="section-sep"><span class="diamond"></span></div>
+<!-- ============================== SEÇÃO 5 ============================== -->
+<section class="module-section" id="s5">
+  <div class="section-label"><span class="num">5</span> Checkout</div>
+  <h2 class="section-title">Hora de Pagar</h2>
+  <p class="section-subtitle">Do caixa ao recibo — tudo o que acontece na hora do pagamento.</p>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Indo para o caixa</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Where can I pay for this?" / "Where's the register?"</div>
+      <div class="phrase-pt">Onde posso pagar? / Onde fica o caixa?</div>
+      <div class="phrase-note tip"><strong>Register</strong> (EUA) ou <strong>till</strong> (Reino Unido) = caixa registradora. <strong>"Checkout"</strong> também funciona.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I'd like to pay for these, please."</div>
+      <div class="phrase-pt">Gostaria de pagar esses, por favor.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Can I pay by card?" / "Do you accept credit cards?"</div>
+      <div class="phrase-pt">Posso pagar com cartão? / Vocês aceitam cartão de crédito?</div>
+    </div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Formas de pagamento</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Do you take American Express / Visa / Mastercard?"</div>
+      <div class="phrase-pt">Vocês aceitam American Express / Visa / Mastercard?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Can I pay with Apple Pay / contactless?"</div>
+      <div class="phrase-pt">Posso pagar com Apple Pay / por aproximação?</div>
+      <div class="phrase-note tip"><strong>Contactless</strong> = pagamento por aproximação (tap to pay). Muito comum nos EUA, Europa e Ásia.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I'd like to pay in cash."</div>
+      <div class="phrase-pt">Gostaria de pagar em dinheiro.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Can I split the payment between two cards?"</div>
+      <div class="phrase-pt">Posso dividir o pagamento entre dois cartões?</div>
+    </div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">O que o caixa pode perguntar</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Credit or debit?"</div>
+      <div class="phrase-pt">Crédito ou débito?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Would you like a bag?" / "Do you need a bag?"</div>
+      <div class="phrase-pt">Gostaria de uma sacola? / Precisa de uma sacola?</div>
+      <div class="phrase-note warning">Em muitos países europeus e em cidades como Nova York, sacolas plásticas são cobradas. É normal. <strong>"Yes, please"</strong> ou <strong>"No, I'm fine, thanks"</strong>.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Would you like a receipt?" / "Email or printed?"</div>
+      <div class="phrase-pt">Gostaria do recibo? / Por e-mail ou impresso?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Would you like to sign up for our mailing list?"</div>
+      <div class="phrase-pt">Gostaria de se cadastrar na nossa lista de e-mails?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Would you like gift wrapping?"</div>
+      <div class="phrase-pt">Gostaria de embrulho para presente?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Your total comes to $247.85."</div>
+      <div class="phrase-pt">Seu total dá $247,85.</div>
+    </div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Suas respostas no caixa</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Credit, please." / "I'll use debit."</div>
+      <div class="phrase-pt">Crédito, por favor. / Vou usar débito.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Yes, I'd like a printed receipt, please. I might need it for a return."</div>
+      <div class="phrase-pt">Sim, gostaria do recibo impresso, por favor. Posso precisar para uma troca.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Could you double-bag this? It's fragile."</div>
+      <div class="phrase-pt">Poderia colocar sacola dupla? É frágil.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Could you gift-wrap it? It's a present."</div>
+      <div class="phrase-pt">Poderia embalar para presente? É um presente.</div>
+    </div>
+  </div>
+
+  <div class="dialogue-box">
+    <div class="dialogue-header">Diálogo Prático</div>
+    <div class="dialogue-context">No caixa de uma loja de roupas</div>
+
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-them">SA</div>
+      <div class="dialogue-bubble">
+        <div class="en">Hi! Did you find everything okay?</div>
+        <div class="pt">Oi! Encontrou tudo bem?</div>
+      </div>
+    </div>
+
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-you">You</div>
+      <div class="dialogue-bubble">
+        <div class="en">Yes, I did, thanks. Just these two items.</div>
+        <div class="pt">Sim, obrigado(a). Só esses dois itens.</div>
+      </div>
+    </div>
+
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-them">SA</div>
+      <div class="dialogue-bubble">
+        <div class="en">Great. Your total is $189.50. Credit or debit?</div>
+        <div class="pt">Ótimo. Seu total é $189,50. Crédito ou débito?</div>
+      </div>
+    </div>
+
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-you">You</div>
+      <div class="dialogue-bubble">
+        <div class="en">Credit, please. Oh — does this price include tax?</div>
+        <div class="pt">Crédito, por favor. Ah — esse preço inclui imposto?</div>
+      </div>
+    </div>
+
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-them">SA</div>
+      <div class="dialogue-bubble">
+        <div class="en">Yes, tax is already included in the total. Go ahead and tap or insert your card.</div>
+        <div class="pt">Sim, o imposto já está incluído no total. Pode aproximar ou inserir o cartão.</div>
+      </div>
+    </div>
+
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-you">You</div>
+      <div class="dialogue-bubble">
+        <div class="en">Can I get a printed receipt? I may need it for tax refund purposes.</div>
+        <div class="pt">Posso receber o recibo impresso? Posso precisar para fins de restituição de imposto.</div>
+      </div>
+    </div>
+
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-them">SA</div>
+      <div class="dialogue-bubble">
+        <div class="en">Of course. Here you go. Would you also like a bag?</div>
+        <div class="pt">Claro. Aqui está. Gostaria de uma sacola também?</div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="section-sep"><span class="diamond"></span></div>
+<!-- ============================== SEÇÃO 6 ============================== -->
+<section class="module-section" id="s6">
+  <div class="section-label"><span class="num">6</span> Tax Free</div>
+  <h2 class="section-title">Tax Refund e Duty Free</h2>
+  <p class="section-subtitle">Como recuperar impostos e entender as regras de compras isentas.</p>
+
+  <p class="section-intro">
+    Em muitos países da Europa e em diversas outras regiões do mundo, turistas podem solicitar o reembolso do imposto sobre compras (VAT refund / Tax refund). Isso pode representar uma economia de 10% a 20% do valor. É essencial saber pedir e entender o processo — tudo começa na loja.
+  </p>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Na loja — solicitando o Tax Free</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Do you offer tax-free shopping for tourists?"</div>
+      <div class="phrase-pt">Vocês oferecem compras tax-free para turistas?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I'm a tourist. Can I get a VAT refund on this purchase?"</div>
+      <div class="phrase-pt">Sou turista. Posso obter restituição de IVA nessa compra?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"What's the minimum purchase for a tax refund?"</div>
+      <div class="phrase-pt">Qual é o valor mínimo de compra para restituição de imposto?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Could you fill out the tax-free form for me, please?"</div>
+      <div class="phrase-pt">Poderia preencher o formulário de tax-free para mim, por favor?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Do I need to show my passport?"</div>
+      <div class="phrase-pt">Preciso mostrar meu passaporte?</div>
+    </div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">No aeroporto — resgatando o Tax Refund</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Where is the tax refund counter?"</div>
+      <div class="phrase-pt">Onde fica o balcão de restituição de impostos?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I'd like to claim my VAT refund. Here are my receipts and forms."</div>
+      <div class="phrase-pt">Gostaria de solicitar minha restituição de IVA. Aqui estão meus recibos e formulários.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Do I need to show the items to customs before checking in my luggage?"</div>
+      <div class="phrase-pt">Preciso mostrar os itens para a alfândega antes de despachar a bagagem?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Can I receive the refund on my credit card or only in cash?"</div>
+      <div class="phrase-pt">Posso receber a restituição no cartão de crédito ou só em dinheiro?</div>
+    </div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Duty Free — no aeroporto</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Is this price duty-free?"</div>
+      <div class="phrase-pt">Esse preço já é isento de impostos?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"What's the limit on alcohol / tobacco / perfume I can bring through customs?"</div>
+      <div class="phrase-pt">Qual é o limite de álcool / tabaco / perfume que posso levar pela alfândega?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Will this be sealed in a security bag?"</div>
+      <div class="phrase-pt">Isso vai ser lacrado em uma sacola de segurança?</div>
+    </div>
+  </div>
+
+  <div class="pro-tip">
+    <h4>Dica de Ouro</h4>
+    <p>Sempre peça o formulário de Tax Free <strong>na hora da compra</strong>. Não é possível solicitar depois. Guarde todos os recibos juntos com os formulários e não use os produtos antes de passar pela alfândega — em alguns países, os fiscais pedem para ver os itens lacrados e com etiqueta.</p>
+  </div>
+</section>
+<div class="section-sep"><span class="diamond"></span></div>
+<!-- ============================== SEÇÃO 7 ============================== -->
+<section class="module-section" id="s7">
+  <div class="section-label"><span class="num">7</span> Returns & Exchanges</div>
+  <h2 class="section-title">Trocas e Devoluções</h2>
+  <p class="section-subtitle">Uma das situações mais temidas — mas totalmente gerenciável com as frases certas.</p>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Perguntar sobre a política de trocas</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"What's your return policy?"</div>
+      <div class="phrase-pt">Qual é a política de devolução de vocês?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"How many days do I have to return this?"</div>
+      <div class="phrase-pt">Quantos dias tenho para devolver isso?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Can I return this if it doesn't fit?"</div>
+      <div class="phrase-pt">Posso devolver se não servir?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Do I need the original receipt for a return?"</div>
+      <div class="phrase-pt">Preciso do recibo original para devolver?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Can I get a full refund or only store credit?"</div>
+      <div class="phrase-pt">Recebo reembolso total ou só crédito na loja?</div>
+      <div class="phrase-note warning"><strong>Store credit</strong> = crédito na loja. Você não recebe dinheiro de volta, apenas um vale para comprar naquela loja. Muitas lojas nos EUA oferecem apenas isso.</div>
+    </div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Fazendo a troca ou devolução</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I'd like to exchange this for a different size."</div>
+      <div class="phrase-pt">Gostaria de trocar por um tamanho diferente.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I'd like to return this. I have the receipt and the tags are still on."</div>
+      <div class="phrase-pt">Gostaria de devolver isso. Tenho o recibo e as etiquetas ainda estão.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I bought this as a gift, but the person already has one. Can I return it?"</div>
+      <div class="phrase-pt">Comprei como presente, mas a pessoa já tem um. Posso devolver?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"It arrived damaged. I'd like a replacement or a refund."</div>
+      <div class="phrase-pt">Chegou danificado. Gostaria de uma substituição ou reembolso.</div>
+    </div>
+  </div>
+
+  <div class="dialogue-box">
+    <div class="dialogue-header">Diálogo Prático</div>
+    <div class="dialogue-context">Devolvendo um item em uma loja — compra feita dias antes</div>
+
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-you">You</div>
+      <div class="dialogue-bubble">
+        <div class="en">Hi, I'd like to return this sweater. I bought it three days ago, but it doesn't fit well.</div>
+        <div class="pt">Oi, gostaria de devolver esse suéter. Comprei três dias atrás, mas não ficou bom.</div>
+      </div>
+    </div>
+
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-them">SA</div>
+      <div class="dialogue-bubble">
+        <div class="en">No problem. Do you have the receipt?</div>
+        <div class="pt">Sem problema. Tem o recibo?</div>
+      </div>
+    </div>
+
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-you">You</div>
+      <div class="dialogue-bubble">
+        <div class="en">Yes, here it is. The tags are still attached and I haven't washed it.</div>
+        <div class="pt">Sim, aqui está. As etiquetas ainda estão e eu não lavei.</div>
+      </div>
+    </div>
+
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-them">SA</div>
+      <div class="dialogue-bubble">
+        <div class="en">Would you like a refund to your original payment method, or would you prefer store credit?</div>
+        <div class="pt">Gostaria do reembolso na forma de pagamento original ou prefere crédito na loja?</div>
+      </div>
+    </div>
+
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-you">You</div>
+      <div class="dialogue-bubble">
+        <div class="en">A refund to my card, please.</div>
+        <div class="pt">Reembolso no cartão, por favor.</div>
+      </div>
+    </div>
+
+    <div class="dialogue-line">
+      <div class="dialogue-speaker speaker-them">SA</div>
+      <div class="dialogue-bubble">
+        <div class="en">All set. The refund should appear on your statement within five to seven business days.</div>
+        <div class="pt">Pronto. O reembolso deve aparecer no seu extrato em cinco a sete dias úteis.</div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="section-sep"><span class="diamond"></span></div>
+<!-- ============================== SEÇÃO 8 ============================== -->
+<section class="module-section" id="s8">
+  <div class="section-label"><span class="num">8</span> Problem Solving</div>
+  <h2 class="section-title">Resolvendo Problemas</h2>
+  <p class="section-subtitle">Quando algo dá errado — cobrança indevida, produto defeituoso, atendimento ruim.</p>
+
+  <p class="section-intro">
+    Essa é a seção que você espera nunca precisar, mas que faz toda a diferença quando o momento chega. Reclamar em inglês com educação e firmeza é uma habilidade poderosa. O segredo: seja claro, direto e nunca perca a compostura.
+  </p>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Cobrança errada</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Excuse me, I think there's been a mistake on my bill."</div>
+      <div class="phrase-pt">Com licença, acho que houve um erro na minha conta.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I was charged twice for the same item."</div>
+      <div class="phrase-pt">Fui cobrado duas vezes pelo mesmo item.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"The price on the tag says $59, but I was charged $79. Could you check?"</div>
+      <div class="phrase-pt">O preço na etiqueta diz $59, mas fui cobrado $79. Poderia verificar?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"The discount wasn't applied to my purchase."</div>
+      <div class="phrase-pt">O desconto não foi aplicado na minha compra.</div>
+    </div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Produto defeituoso</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I just bought this and it's already broken / damaged / not working."</div>
+      <div class="phrase-pt">Acabei de comprar e já está quebrado / danificado / não funciona.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"There's a stain / a tear / a missing button on this."</div>
+      <div class="phrase-pt">Tem uma mancha / um rasgado / um botão faltando nesse.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I'd like to speak to a manager, please."</div>
+      <div class="phrase-pt">Gostaria de falar com um gerente, por favor.</div>
+      <div class="phrase-note tip">Nos EUA, pedir para falar com o gerente é muito comum e aceito. Não é considerado agressivo — é visto como um passo natural quando o vendedor não resolve.</div>
+    </div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Cartão não passou / problemas no pagamento</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"My card was declined, but I know there are funds available. Could you try again?"</div>
+      <div class="phrase-pt">Meu cartão foi recusado, mas sei que tem saldo. Poderia tentar novamente?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Could I try a different card?"</div>
+      <div class="phrase-pt">Posso tentar outro cartão?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I need to call my bank. Could you hold these items for me for a few minutes?"</div>
+      <div class="phrase-pt">Preciso ligar para o meu banco. Poderia segurar esses itens para mim por alguns minutos?</div>
+    </div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Escalando o problema com firmeza e educação</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I understand, but I'm not satisfied with this solution. What else can you do?"</div>
+      <div class="phrase-pt">Eu entendo, mas não estou satisfeito(a) com essa solução. O que mais vocês podem fazer?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I'd like this issue to be resolved today. Who can help me with that?"</div>
+      <div class="phrase-pt">Gostaria que isso fosse resolvido hoje. Quem pode me ajudar com isso?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I'll need to file a complaint. Can you give me the customer service number or email?"</div>
+      <div class="phrase-pt">Vou precisar registrar uma reclamação. Pode me dar o telefone ou e-mail do atendimento ao cliente?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I'd appreciate it if we could work this out. I'd rather not have to dispute the charge with my bank."</div>
+      <div class="phrase-pt">Ficaria grato(a) se pudéssemos resolver isso. Prefiro não ter que contestar a cobrança com meu banco.</div>
+      <div class="phrase-note">Essa frase é poderosa. Mencionar <strong>"dispute the charge"</strong> (contestar a cobrança) é um sinal claro de que você conhece seus direitos — e geralmente acelera a resolução.</div>
+    </div>
+  </div>
+
+  <div class="scenario-alert">
+    <h4>Situação de Atenção</h4>
+    <p>Se você perceber que uma cobrança indevida foi feita no seu cartão após já ter saído da loja, ligue para a loja e diga: <strong>"I was in your store earlier today and I noticed an incorrect charge on my card. Could you help me resolve this?"</strong> (Estive na loja mais cedo e notei uma cobrança incorreta no meu cartão. Vocês podem me ajudar a resolver?) Se não resolverem, entre em contato com o banco e peça um <strong>chargeback</strong>.</p>
+  </div>
+</section>
+<div class="section-sep"><span class="diamond"></span></div>
+<!-- ============================== SEÇÃO 9 ============================== -->
+<section class="module-section" id="s9">
+  <div class="section-label"><span class="num">9</span> Electronics</div>
+  <h2 class="section-title">Comprando Eletrônicos</h2>
+  <p class="section-subtitle">Celulares, laptops, câmeras — vocabulário técnico essencial e como garantir que funciona no Brasil.</p>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Perguntas essenciais sobre compatibilidade</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Is this an unlocked phone, or is it locked to a specific carrier?"</div>
+      <div class="phrase-pt">Esse celular é desbloqueado ou está preso a uma operadora?</div>
+      <div class="phrase-note warning"><strong>Unlocked</strong> = desbloqueado (funciona com qualquer chip). <strong>Carrier-locked</strong> = preso a uma operadora. Para usar no Brasil, você <strong>precisa</strong> de um aparelho unlocked.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Will this work with international voltage? My country uses 220V."</div>
+      <div class="phrase-pt">Isso funciona com voltagem internacional? Meu país usa 220V.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Does this come with an international warranty?"</div>
+      <div class="phrase-pt">Vem com garantia internacional?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"What type of plug does this use? Will I need an adapter?"</div>
+      <div class="phrase-pt">Que tipo de tomada usa? Vou precisar de um adaptador?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Does this laptop have a QWERTY keyboard or a different layout?"</div>
+      <div class="phrase-pt">Esse laptop tem teclado QWERTY ou um layout diferente?</div>
+    </div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Comparando e decidindo</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"What's the difference between this model and the one above it?"</div>
+      <div class="phrase-pt">Qual a diferença entre esse modelo e o acima dele?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Is there a newer version of this available?"</div>
+      <div class="phrase-pt">Existe uma versão mais nova disso disponível?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Can I see a demo?" / "Can I test it before I buy it?"</div>
+      <div class="phrase-pt">Posso ver uma demonstração? / Posso testar antes de comprar?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Does this come with all the original accessories?"</div>
+      <div class="phrase-pt">Vem com todos os acessórios originais?</div>
+    </div>
+  </div>
+
+  <div class="vocab-grid">
+    <div class="vocab-item"><div class="vocab-en">charger</div><div class="vocab-pt">carregador</div></div>
+    <div class="vocab-item"><div class="vocab-en">adapter / converter</div><div class="vocab-pt">adaptador / conversor</div></div>
+    <div class="vocab-item"><div class="vocab-en">screen protector</div><div class="vocab-pt">película</div></div>
+    <div class="vocab-item"><div class="vocab-en">case / cover</div><div class="vocab-pt">capinha / capa</div></div>
+    <div class="vocab-item"><div class="vocab-en">storage (128GB / 256GB)</div><div class="vocab-pt">armazenamento</div></div>
+    <div class="vocab-item"><div class="vocab-en">noise-canceling</div><div class="vocab-pt">cancelamento de ruído</div></div>
+    <div class="vocab-item"><div class="vocab-en">battery life</div><div class="vocab-pt">duração da bateria</div></div>
+    <div class="vocab-item"><div class="vocab-en">refurbished</div><div class="vocab-pt">recondicionado</div></div>
+  </div>
+
+  <div class="pro-tip">
+    <h4>Dica de Ouro</h4>
+    <p>Se estiver comprando nos EUA, pergunte sempre: <strong>"Is this the US version or the international version?"</strong> Alguns eletrônicos têm versões regionais com diferenças em bandas de frequência, voltagem e até funcionalidades. E sempre guarde a <strong>nota fiscal original (receipt)</strong> — ela é exigida pela Receita Federal brasileira na volta.</p>
+  </div>
+</section>
+<div class="section-sep"><span class="diamond"></span></div>
+<!-- ============================== SEÇÃO 10 ============================== -->
+<section class="module-section" id="s10">
+  <div class="section-label"><span class="num">10</span> Luxury & Jewelry</div>
+  <h2 class="section-title">Compras de Luxo e Joalheria</h2>
+  <p class="section-subtitle">Atendimento personalizado, peças exclusivas e o vocabulário que demonstra sofisticação.</p>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Chegando e sendo atendido</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Good afternoon. I'd like to see your new collection, please."</div>
+      <div class="phrase-pt">Boa tarde. Gostaria de ver a coleção nova, por favor.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I have an appointment with a sales associate."</div>
+      <div class="phrase-pt">Tenho um horário marcado com um vendedor.</div>
+      <div class="phrase-note tip">Em lojas de grife como Hermès, Chanel e Louis Vuitton, é comum ter que agendar. <strong>"Sales associate"</strong> ou <strong>"SA"</strong> é como chamam o vendedor no universo do luxo.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Could I have a look at the pieces in the display case?"</div>
+      <div class="phrase-pt">Poderia ver as peças na vitrine/expositor?</div>
+    </div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Joalheria — perguntas específicas</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Is this solid gold or gold-plated?"</div>
+      <div class="phrase-pt">Isso é ouro maciço ou folheado a ouro?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"What carat is this diamond?" / "What's the carat weight?"</div>
+      <div class="phrase-pt">Quantos quilates tem esse diamante? / Qual é o peso em quilates?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Does it come with a certificate of authenticity?"</div>
+      <div class="phrase-pt">Vem com certificado de autenticidade?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Can this ring be resized?"</div>
+      <div class="phrase-pt">Esse anel pode ser redimensionado?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I'd like to have it engraved. Is that possible?"</div>
+      <div class="phrase-pt">Gostaria de gravar algo. É possível?</div>
+    </div>
+  </div>
+
+  <div class="vocab-grid">
+    <div class="vocab-item"><div class="vocab-en">18-karat gold</div><div class="vocab-pt">ouro 18 quilates</div></div>
+    <div class="vocab-item"><div class="vocab-en">sterling silver</div><div class="vocab-pt">prata de lei</div></div>
+    <div class="vocab-item"><div class="vocab-en">white gold / rose gold</div><div class="vocab-pt">ouro branco / ouro rosé</div></div>
+    <div class="vocab-item"><div class="vocab-en">platinum</div><div class="vocab-pt">platina</div></div>
+    <div class="vocab-item"><div class="vocab-en">gemstone</div><div class="vocab-pt">pedra preciosa</div></div>
+    <div class="vocab-item"><div class="vocab-en">setting (prong / bezel)</div><div class="vocab-pt">cravação (garra / chanfro)</div></div>
+    <div class="vocab-item"><div class="vocab-en">clasp</div><div class="vocab-pt">fecho</div></div>
+    <div class="vocab-item"><div class="vocab-en">bespoke / custom-made</div><div class="vocab-pt">sob medida / feito sob encomenda</div></div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Marcas de luxo — frases especiais</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Is this from the current season's collection?"</div>
+      <div class="phrase-pt">Isso é da coleção da temporada atual?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Do you have this in a different leather / hardware color?"</div>
+      <div class="phrase-pt">Vocês têm em outra cor de couro / ferragem?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Is there a waitlist for this item?"</div>
+      <div class="phrase-pt">Existe lista de espera para esse item?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Could you ship it to my hotel?"</div>
+      <div class="phrase-pt">Vocês poderiam enviar para meu hotel?</div>
+    </div>
+  </div>
+</section>
+<div class="section-sep"><span class="diamond"></span></div>
+<!-- ============================== SEÇÃO 11 ============================== -->
+<section class="module-section" id="s11">
+  <div class="section-label"><span class="num">11</span> Markets & Fairs</div>
+  <h2 class="section-title">Mercados de Rua e Feiras</h2>
+  <p class="section-subtitle">Onde a negociação é parte da experiência — e falar inglês com jogo de cintura faz diferença.</p>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Explorando e perguntando</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"This is beautiful! Is it handmade?"</div>
+      <div class="phrase-pt">Que lindo! É feito à mão?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Where is this from? Is it locally made?"</div>
+      <div class="phrase-pt">De onde é? É de produção local?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Can I pick it up and take a closer look?"</div>
+      <div class="phrase-pt">Posso pegar para ver mais de perto?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"How much for this one?" / "How much are you asking for it?"</div>
+      <div class="phrase-pt">Quanto custa esse? / Quanto está pedindo?</div>
+    </div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Negociando com charme</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"That's a bit steep for me. Any chance you could come down a little?"</div>
+      <div class="phrase-pt">Está um pouco caro para mim. Tem como baixar um pouco?</div>
+      <div class="phrase-note tip"><strong>"A bit steep"</strong> é uma forma muito elegante de dizer que algo é caro. Muito mais sofisticada do que "too expensive".</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I really love it, but it's a little out of my budget."</div>
+      <div class="phrase-pt">Eu adorei, mas está um pouco fora do meu orçamento.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"What if I buy three? Can you give me a deal?"</div>
+      <div class="phrase-pt">E se eu comprar três? Faz um preço melhor?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I'll take it for [amount]. Deal?"</div>
+      <div class="phrase-pt">Levo por [valor]. Fechado?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"You've got a deal!" / "Sold!"</div>
+      <div class="phrase-pt">Fechado! (quando o vendedor aceita seu preço)</div>
+    </div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Comida em mercados</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Can I try a sample?"</div>
+      <div class="phrase-pt">Posso experimentar uma amostra?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"What is this? What does it taste like?"</div>
+      <div class="phrase-pt">O que é isso? Qual é o gosto?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I have a food allergy. Does this contain nuts / gluten / dairy?"</div>
+      <div class="phrase-pt">Tenho alergia alimentar. Isso contém nozes / glúten / laticínios?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I'll have one of those, please. To go."</div>
+      <div class="phrase-pt">Quero um desses, por favor. Para viagem.</div>
+    </div>
+  </div>
+</section>
+<div class="section-sep"><span class="diamond"></span></div>
+<!-- ============================== SEÇÃO 12 ============================== -->
+<section class="module-section" id="s12">
+  <div class="section-label"><span class="num">12</span> Grocery Store</div>
+  <h2 class="section-title">No Supermercado</h2>
+  <p class="section-subtitle">Situações do dia a dia que parecem simples, mas exigem vocabulário específico.</p>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Encontrando o que precisa</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Excuse me, where can I find the dairy section?"</div>
+      <div class="phrase-pt">Com licença, onde fica a seção de laticínios?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Which aisle are the snacks in?"</div>
+      <div class="phrase-pt">Em que corredor ficam os snacks?</div>
+      <div class="phrase-note tip"><strong>Aisle</strong> (pronuncia-se "ail") = corredor de supermercado. Palavra essencial.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Do you have any organic / gluten-free / vegan options?"</div>
+      <div class="phrase-pt">Vocês têm opções orgânicas / sem glúten / veganas?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Is this fresh? When does it expire?"</div>
+      <div class="phrase-pt">Isso é fresco? Quando vence?</div>
+    </div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">No caixa do supermercado</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Paper or plastic?" → "Paper, please." / "I brought my own bag."</div>
+      <div class="phrase-pt">"Sacola de papel ou plástico?" → "Papel, por favor." / "Trouxe minha própria sacola."</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Do you have a loyalty card?" → "No, I'm just visiting."</div>
+      <div class="phrase-pt">"Tem cartão fidelidade?" → "Não, estou só de passagem."</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I'd like to pay cash. Can I get change for a hundred?"</div>
+      <div class="phrase-pt">Gostaria de pagar em dinheiro. Tem troco para cem?</div>
+    </div>
+  </div>
+
+  <div class="vocab-grid">
+    <div class="vocab-item"><div class="vocab-en">aisle</div><div class="vocab-pt">corredor</div></div>
+    <div class="vocab-item"><div class="vocab-en">checkout / self-checkout</div><div class="vocab-pt">caixa / caixa automático</div></div>
+    <div class="vocab-item"><div class="vocab-en">expiration date</div><div class="vocab-pt">data de validade</div></div>
+    <div class="vocab-item"><div class="vocab-en">shopping cart / basket</div><div class="vocab-pt">carrinho / cestinha</div></div>
+    <div class="vocab-item"><div class="vocab-en">deli counter</div><div class="vocab-pt">balcão de frios</div></div>
+    <div class="vocab-item"><div class="vocab-en">bakery section</div><div class="vocab-pt">seção de padaria</div></div>
+    <div class="vocab-item"><div class="vocab-en">frozen food</div><div class="vocab-pt">congelados</div></div>
+    <div class="vocab-item"><div class="vocab-en">produce section</div><div class="vocab-pt">seção de frutas e verduras</div></div>
+  </div>
+</section>
+<div class="section-sep"><span class="diamond"></span></div>
+<!-- ============================== SEÇÃO 13 ============================== -->
+<section class="module-section" id="s13">
+  <div class="section-label"><span class="num">13</span> Pharmacy</div>
+  <h2 class="section-title">Na Farmácia</h2>
+  <p class="section-subtitle">Descrever sintomas, pedir remédios e entender as diferenças — farmácia no exterior é diferente.</p>
+
+  <p class="section-intro">
+    Em muitos países, a farmácia é dividida em duas partes: o balcão de atendimento farmacêutico (pharmacy counter) e as prateleiras com produtos de venda livre (over-the-counter / OTC). Saber a diferença e descrever o que você precisa é fundamental.
+  </p>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Descrevendo o que você precisa</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I need something for a headache / a cold / an upset stomach."</div>
+      <div class="phrase-pt">Preciso de algo para dor de cabeça / resfriado / estômago embrulhado.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I have a sore throat. What do you recommend?"</div>
+      <div class="phrase-pt">Estou com dor de garganta. O que recomenda?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I need sunscreen — at least SPF 50."</div>
+      <div class="phrase-pt">Preciso de protetor solar — no mínimo FPS 50.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Do you have something for motion sickness?"</div>
+      <div class="phrase-pt">Tem algo para enjoo de movimento? (ônibus, barco, avião)</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I'm looking for antihistamines — I have seasonal allergies."</div>
+      <div class="phrase-pt">Estou procurando antialérgico — tenho alergia sazonal.</div>
+    </div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Medicamentos com receita</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I have a prescription from my doctor. Can you fill it?"</div>
+      <div class="phrase-pt">Tenho uma receita do meu médico. Vocês podem atender?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I take this medication regularly. Can I get it here without a local prescription?"</div>
+      <div class="phrase-pt">Tomo esse remédio regularmente. Consigo comprá-lo aqui sem receita local?</div>
+      <div class="phrase-note warning">Muitos medicamentos comuns no Brasil exigem receita nos EUA e vice-versa. Sempre leve sua receita original e, se possível, traduzida.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Is there a generic version available? It would be more affordable."</div>
+      <div class="phrase-pt">Existe uma versão genérica? Seria mais acessível.</div>
+    </div>
+  </div>
+
+  <div class="vocab-grid">
+    <div class="vocab-item"><div class="vocab-en">over-the-counter (OTC)</div><div class="vocab-pt">sem receita</div></div>
+    <div class="vocab-item"><div class="vocab-en">prescription</div><div class="vocab-pt">receita médica</div></div>
+    <div class="vocab-item"><div class="vocab-en">painkiller</div><div class="vocab-pt">analgésico</div></div>
+    <div class="vocab-item"><div class="vocab-en">band-aid / adhesive bandage</div><div class="vocab-pt">curativo adesivo</div></div>
+    <div class="vocab-item"><div class="vocab-en">cough syrup</div><div class="vocab-pt">xarope para tosse</div></div>
+    <div class="vocab-item"><div class="vocab-en">eye drops</div><div class="vocab-pt">colírio</div></div>
+    <div class="vocab-item"><div class="vocab-en">antacid</div><div class="vocab-pt">antiácido</div></div>
+    <div class="vocab-item"><div class="vocab-en">insect repellent</div><div class="vocab-pt">repelente</div></div>
+  </div>
+</section>
+<div class="section-sep"><span class="diamond"></span></div>
+<!-- ============================== SEÇÃO 14 ============================== -->
+<section class="module-section" id="s14">
+  <div class="section-label"><span class="num">14</span> Online Orders</div>
+  <h2 class="section-title">Compras Online com Retirada e Entrega</h2>
+  <p class="section-subtitle">Comprou no site e vai retirar na loja? Pediu delivery no hotel? Aqui está tudo o que você precisa saber.</p>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Retirada na loja (Buy Online, Pick Up In Store — BOPIS)</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Hi, I placed an order online for in-store pickup. Here's my confirmation number."</div>
+      <div class="phrase-pt">Oi, fiz um pedido online para retirar na loja. Aqui está meu número de confirmação.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I received an email saying my order is ready for pickup."</div>
+      <div class="phrase-pt">Recebi um e-mail dizendo que meu pedido está pronto para retirada.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"The order is under the name [seu nome]. Can you check?"</div>
+      <div class="phrase-pt">O pedido está no nome [seu nome]. Pode verificar?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"One of the items is wrong. I ordered the blue one, not the black."</div>
+      <div class="phrase-pt">Um dos itens está errado. Pedi o azul, não o preto.</div>
+    </div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Entrega no hotel ou endereço temporário</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Can I have this delivered to my hotel?"</div>
+      <div class="phrase-pt">Posso ter isso entregue no meu hotel?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I'm staying at [hotel name]. How long would delivery take?"</div>
+      <div class="phrase-pt">Estou hospedado(a) no [nome do hotel]. Quanto tempo leva a entrega?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Is there an option for same-day delivery?"</div>
+      <div class="phrase-pt">Tem opção de entrega no mesmo dia?</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"My package hasn't arrived yet. Can you track it for me?"</div>
+      <div class="phrase-pt">Meu pacote ainda não chegou. Pode rastrear para mim?</div>
+    </div>
+  </div>
+
+  <div class="phrase-group">
+    <div class="phrase-group-title">Problemas com pedidos online</div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I received the wrong item. I'd like a replacement or a refund."</div>
+      <div class="phrase-pt">Recebi o item errado. Gostaria de uma substituição ou reembolso.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"The package arrived, but the product inside is damaged."</div>
+      <div class="phrase-pt">O pacote chegou, mas o produto dentro está danificado.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"I'd like to cancel this order. It hasn't shipped yet."</div>
+      <div class="phrase-pt">Gostaria de cancelar esse pedido. Ainda não foi enviado.</div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-en">"Can I return an online purchase at a physical store?"</div>
+      <div class="phrase-pt">Posso devolver uma compra online na loja física?</div>
+    </div>
+  </div>
+
+  <div class="pro-tip">
+    <h4>Dica de Ouro</h4>
+    <p>Nos EUA, muitas lojas permitem que você compre online e retire gratuitamente na loja mais próxima em poucas horas — é o chamado <strong>BOPIS</strong> (Buy Online, Pick Up In Store) ou <strong>curbside pickup</strong> (retirada sem sair do carro). Isso é muito prático quando você já sabe o que quer e não quer perder tempo na loja. Lojas como Target, Best Buy, Walmart e Apple Store oferecem esse serviço.</p>
+  </div>
+</section>
+<!-- ==================== FOOTER ==================== -->
+<div class="section-sep"><span class="diamond"></span></div>
+<footer class="course-footer">
+  <div class="footer-brand">Shopping Abroad — English for Travelers</div>
+  <p class="footer-text">
+    Conteúdo exclusivo para fins educacionais.<br>
+    Desenvolvido com excelência para alunos que buscam comunicação internacional de alto nível.
+  </p>
+</footer>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p></main>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<!-- ==================== SCROLL ANIMATION ==================== -->
